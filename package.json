@@ -1,0 +1,34 @@
+{
+  "name": "csvalid",
+  "version": "0.0.1",
+  "description": "Parses a CSV file and ensures that not only is it valid CSV, but the data in each column fits a defined schema.",
+  "main": "index.js",
+  "bin": {
+    "csvalid": "index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/futurefirst/csvalid.git"
+  },
+  "keywords": [
+    "csv",
+    "validation",
+    "parse",
+    "regex",
+    "data"
+  ],
+  "author": "David Knoll <david.knoll@futurefirst.org.uk>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/futurefirst/csvalid/issues"
+  },
+  "homepage": "https://github.com/futurefirst/csvalid#readme",
+  "dependencies": {
+    "csv": "^5.1.1",
+    "yargs": "^13.2.2"
+  }
+}
