@@ -82,6 +82,16 @@ const checkCell = (cell, colDef) => {
     }
   }
 
+  // Column must meet a minimum string length
+  if (new String(cell).length < colDef.minLen) {
+    msgs.push('is too short as a string');
+  }
+
+  // Column must meet a maximum string length
+  if (new String(cell).length > colDef.maxLen) {
+    msgs.push('is too long as a string');
+  }
+
   return msgs;
 };
 
