@@ -9,6 +9,16 @@
 const checkCell = (cell, colDef) => {
   const msgs = [];
 
+  // Column must actually exist, unless optional (not the same thing as not being empty)
+  // (If numbered, must be enough columns. If named, must appear in the header.)
+  if (cell === undefined) {
+    if (colDef.optional) {
+      return [];
+    } else {
+      return ['no such column'];
+    }
+  }
+
   // Column must/mustn't be empty
   if (colDef.isEmpty) {
     if (cell !== '') {

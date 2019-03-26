@@ -10,20 +10,6 @@ const csv = require('csv');
 const yargs = require('yargs');
 const checkCell = require('./checks').checkCell;
 
-/**
- * Check whether we have a blank line in the file
- * @param  {Array|Object} rec One parsed record
- * @return {boolean}          True if it came from a blank line (not even any commas), else false
- */
-const isRowBlank = (rec) => {
-  if (Array.isArray(rec)) {
-    return (rec.length === 1 && rec[0] === '');
-  } else {
-    const keys = Object.keys(rec);
-    return (keys.length === 1 && rec[keys[0]] === '');
-  }
-};
-
 const argv = yargs
   .alias({
     csv: 'c',
@@ -47,13 +33,12 @@ const instream = argv.csv ? fs.createReadStream(argv.csv) : process.stdin;
 const outstream = argv.errors ? fs.createWriteStream(argv.errors) : process.stdout;
 const schema = JSON.parse(fs.readFileSync(argv.schema, { encoding: 'utf8' }));
 const namedColumnMode = !Array.isArray(schema.columnDefs);
-let colsShould = schema.columns;
 let row = namedColumnMode ? 1 : 0;
 
-const parser = csv.parse({
-  columns: namedColumnMode,
-  relax_column_count: true,
-})
+const parser = csv.parse({ columns: namedColumnMode })
+  .on('error', err => {
+    outstream.write(`${err.message}\n`);
+  })
   .on('end', () => {
     // Need to close output file if using one, but can't close stdout
     if (argv.errors) { outstream.end(); }
@@ -65,16 +50,11 @@ const parser = csv.parse({
       row++;
       if (row <= schema.skipRows) continue;
 
-      // Check consistency of number of columns
-      // BUG: Doesn't work with named column definitions
-      const colsThis = namedColumnMode ? Object.keys(rec).length : rec.length;
-      if (!colsShould) { colsShould = colsThis; }
-      if (isRowBlank(rec)) {
-        outstream.write(`(Row ${row}): is a blank line\n`);
-        continue;
-      }
-      if (colsThis !== colsShould) {
-        outstream.write(`(Row ${row}): inconsistent column count, expected ${colsShould}, found ${colsThis}\n`);
+      // Explicit column count
+      const colCnt = namedColumnMode ? Object.keys(rec).length : rec.length;
+      if (schema.columns && schema.columns !== colCnt) {
+        const msg = `(Row ${row}): Schema specifies ${schema.columns} columns, found ${colCnt}\n`;
+        outstream.write(msg);
       }
 
       // For each cell in this row...
